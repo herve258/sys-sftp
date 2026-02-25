@@ -14,8 +14,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{
-}]]></ee:set-payload>
+payload filter (invoice) -> upper(invoice.currency) == vars.currency]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</when>
@@ -76,6 +75,51 @@ output application/json
     amount: li.amount
   }
 }
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getProducts" doc:id="d59f6be8-b902-4e0e-9841-4d5bc87b307a" >
+		<flow-ref doc:name="getAllProducts" doc:id="b718f1a1-b3a8-423e-9580-8063416b1ac4" name="getAllProducts"/>
+		<choice doc:name="Choice" doc:id="a4fed569-09ab-4136-a75b-75f108d53a2e" >
+			<when expression="#[vars.category != null]">
+				<ee:transform doc:name="Transform Message" doc:id="61f1633d-c03e-4130-896f-50eed437cd13" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload filter (product) -> product.category == vars.category]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value="#[payload]" doc:name="All products" doc:id="c5732d51-56d4-48cf-8108-d066fc501f60" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="getAllProducts" doc:id="905db680-849b-442d-a1fa-3adb615a5f65" >
+		<sftp:read doc:name="Read" doc:id="69c6f7bb-399b-457e-b2c7-bfebe74b42cb" config-ref="SFTP_Config" path="${sftp.filename-product}"/>
+		<ee:transform doc:name="Transform Message" doc:id="ebcbd3db-2af5-4c5f-838f-914b6dded587" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+
+var rawProducts = payload as Array
+
+var typedProducts =
+    rawProducts map (p) -> {
+        id:    p.id,
+        name:  p.name,
+        category: p.category,
+        price: p.price,
+        stock: p.stock default "0"
+    }
+
+var categ = vars.category
+
+---
+typedProducts
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

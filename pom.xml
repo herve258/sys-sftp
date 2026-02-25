@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>0c1ed10f-b06a-4604-8732-6ba00cf44969</groupId>
 			<artifactId>flux-invoices</artifactId>
-			<version>1.0.3</version>
+			<version>1.2.3</version>
 			<classifier>raml</classifier>
 			<type>zip</type>
 		</dependency>
