@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="GetInvoices" doc:id="c7712e9c-8b7b-4a70-8e06-7ec5be7e25ce" >
+		<flow-ref doc:name="getAllInvoices" doc:id="f8fe6cf3-deaa-45f9-9a15-e2ef103378f3" name="getAllInvoices"/>
+		<choice doc:name="Choice" doc:id="0e63f8e5-cc2b-4fe5-8898-13dc543ced5e">
+			<when expression="#[vars.currency != null]">
+				<ee:transform doc:name="Transform Message" doc:id="e54cfeb6-c3a2-4832-91d0-33e6b650e312">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<set-payload value="#[payload]" doc:name="All Invoices" doc:id="03353add-7ba8-400f-b649-96c9c316264a" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="GetInvoice" doc:id="555db9d1-2117-4da4-ad73-ea013ba577aa">
+		<flow-ref doc:name="getAllInvoices" doc:id="4ae87e6a-2f73-4de7-b02d-2d66eab391f8" name="getAllInvoices"/>
+		<ee:transform doc:name="Transform Message" doc:id="1ee19442-9af3-4a75-b787-1bb6d393530b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+var id = vars.invoiceId
+var found = payload filter (invoice) -> invoice.id == id
+
+---
+if (sizeOf(found) != 0)
+    found[0]
+else
+    { message: "Invoice not found" }
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getAllInvoices" doc:id="baa78512-2cbc-4049-ac3b-25a622319c18">
+		<sftp:read doc:name="Read" doc:id="0f789ed7-4e8c-4c36-b121-9a46a668eb33" config-ref="SFTP_Config" path="${sftp.filename}" />
+		<ee:transform doc:name="Transform Message" doc:id="67a40585-f650-4056-ae21-99984ac5549a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+
+---
+(payload as Array) map (item) -> {
+  id: item.data.id,
+  
+  total: item.data.lines.data.amount reduce ((value, init = 0) -> value + init),
+  
+  currency: upper(item.data.currency),
+  
+  date: (item.data.created * 1000) as DateTime,
+  
+  customer: {
+    id: item.data.customer,
+    city: item.data.customer_address.city,
+    country: item.data.customer_address.country,
+    postalCode: item.data.customer_address.postal_code,
+    email: item.data.customer_email,
+    name: item.data.customer_name,
+    phone: item.data.customer_phone
+  },
+
+  lineItems: item.data.lines.data map (li) -> {
+    id: li.id,
+    amount: li.amount
+  }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

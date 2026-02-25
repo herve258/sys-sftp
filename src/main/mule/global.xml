@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="e50ee0c7-a09b-40ce-bb3f-e67f80aebcd3" file="config.yaml" />
+	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="e564d887-9bab-4110-bb70-bfe126a6be68" >
+		<sftp:connection workingDir="${sftp.working-directory}" host="${sftp.Host}" port="${sftp.Port}" username="${sftp.User}" password="${sftp.Password}" />
+	</sftp:config>
+</mule>
