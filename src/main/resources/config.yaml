@@ -5,4 +5,6 @@ sftp:
   User: "linkr"
   Password: "linkr2026"
   working-directory: "upload/theu"
+  working-directory-product: "upload/theu/Herve/Local"
   filename: "invoices.json"
+  filename-product: "products.csv"
