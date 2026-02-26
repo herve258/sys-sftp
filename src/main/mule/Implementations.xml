@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<flow name="GetInvoices" doc:id="c7712e9c-8b7b-4a70-8e06-7ec5be7e25ce" >
 		<flow-ref doc:name="getAllInvoices" doc:id="f8fe6cf3-deaa-45f9-9a15-e2ef103378f3" name="getAllInvoices"/>
 		<choice doc:name="Choice" doc:id="0e63f8e5-cc2b-4fe5-8898-13dc543ced5e">
@@ -80,7 +81,7 @@ output application/json
 		</ee:transform>
 	</flow>
 	<flow name="getProducts" doc:id="d59f6be8-b902-4e0e-9841-4d5bc87b307a" >
-		<flow-ref doc:name="getAllProducts" doc:id="b718f1a1-b3a8-423e-9580-8063416b1ac4" name="getAllProducts"/>
+		<flow-ref doc:name="impl-get-all-products" doc:id="b718f1a1-b3a8-423e-9580-8063416b1ac4" name="getAllProducts"/>
 		<choice doc:name="Choice" doc:id="a4fed569-09ab-4136-a75b-75f108d53a2e" >
 			<when expression="#[vars.category != null]">
 				<ee:transform doc:name="Transform Message" doc:id="61f1633d-c03e-4130-896f-50eed437cd13" >
@@ -97,30 +98,48 @@ payload filter (product) -> product.category == vars.category]]></ee:set-payload
 			</otherwise>
 		</choice>
 	</flow>
+	<flow name="PostProduct" doc:id="240efbe9-faea-41fa-b9dd-66181726ea6c" >
+		<logger level="INFO" doc:name="Logger" doc:id="54b7e6ed-da94-43fe-9b16-6b3de4e5f456" message="Incoming body: #[payload]"/>
+		<set-variable value="#[payload]" doc:name="[newProduct]" doc:id="0a83c10a-b413-49d8-815d-7148a66b69d5" variableName="newProduct"/>
+		<flow-ref doc:name="impl-get-all-products" doc:id="45406bbc-7cad-4de5-9876-dadfdf9577a2" name="getAllProducts"/>
+		<ee:transform doc:name="Append" doc:id="15e5ea7c-2663-4af2-b2b7-f1be4968ac4f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+import * from modules::Products
+
+var existing = payload
+var newProd  = toTypedProduct(vars.newProduct)
+
+---
+if (idExists(existing, newProd.id))
+    "PRODUCT_ALREADY_EXISTS"
+else
+    addProduct(existing, newProd)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="To CSV" doc:id="db2ac186-f7b4-4792-b87f-70f9063ac342">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/csv header=true
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<sftp:write doc:name="Write" doc:id="c696f89d-2077-4c47-a69a-b64a70dd4c02" config-ref="SFTP_Config" path="${sftp.filename-product}" />
+		<set-variable value="201" doc:name="[httpStatus]" doc:id="f7d955c7-0b8f-4501-9671-f7284a600a16" variableName="httpStatus" />
+		<set-payload value="#[vars.newProduct]" doc:name="Set Payload" doc:id="4d8a9291-d3c7-40ab-a6bc-e81a389de7fb" />
+	</flow>
 	<flow name="getAllProducts" doc:id="905db680-849b-442d-a1fa-3adb615a5f65" >
 		<sftp:read doc:name="Read" doc:id="69c6f7bb-399b-457e-b2c7-bfebe74b42cb" config-ref="SFTP_Config" path="${sftp.filename-product}"/>
 		<ee:transform doc:name="Transform Message" doc:id="ebcbd3db-2af5-4c5f-838f-914b6dded587" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
-import * from dw::core::Strings
-
-var rawProducts = payload as Array
-
-var typedProducts =
-    rawProducts map (p) -> {
-        id:    p.id,
-        name:  p.name,
-        category: p.category,
-        price: p.price,
-        stock: p.stock default "0"
-    }
-
-var categ = vars.category
+import * from modules::Products
 
 ---
-typedProducts
-]]></ee:set-payload>
+toTypedProducts(payload as Array)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>

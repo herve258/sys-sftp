@@ -1,0 +1,11 @@
+%dw 2.0
+
+type auto_905db680_849b_442d_a1fa_3adb615a5f65_Output_Variables_newProduct = {
+  price: Number, 
+  name: String, 
+  id: Number, 
+  category: "Graphisme" | "Sécurité" | "Électronique" | "Stockage" | "Audio" | "Accessoire", 
+  stock: Number, 
+  _?: Any
+}
+

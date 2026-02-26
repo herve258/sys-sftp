@@ -142,14 +142,14 @@ output application/json
         <logger level="INFO" message="delete:\products\(id):flux-invoices-config" />
     </flow>
     <flow name="get:\products:flux-invoices-config">
-        <set-variable value="#[attributes.queryParams.category]" doc:name="category" doc:id="d0d11f3c-84f0-483f-b5f7-6353508e00c2" variableName="category" />
-        <flow-ref doc:name="Flow Reference" doc:id="451ccb02-6e76-467c-a096-47adcb646232" name="getProducts" />
+        <set-variable value="#[attributes.queryParams.category]" doc:name="[category]" doc:id="d0d11f3c-84f0-483f-b5f7-6353508e00c2" variableName="category" />
+        <flow-ref doc:name="impl-get-products" doc:id="451ccb02-6e76-467c-a096-47adcb646232" name="getProducts" />
     </flow>
     <flow name="get:\products\(id):flux-invoices-config">
         <logger level="INFO" doc:name="Logger" doc:id="ac85aa40-581a-42db-ac4d-c51c5b926f00" />
     </flow>
     <flow name="post:\products:application\json:flux-invoices-config">
-        <logger level="INFO" message="post:\products:application\json:flux-invoices-config" />
+		<flow-ref doc:name="impl-post-product" doc:id="63b9c006-7c0f-4cdf-a3d2-10630c4ee11d" name="PostProduct"/>
     </flow>
     <flow name="post:\products\(id):flux-invoices-config">
         <ee:transform doc:name="Transform Message">
