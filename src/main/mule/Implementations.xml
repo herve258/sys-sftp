@@ -130,8 +130,12 @@ payload]]></ee:set-payload>
 		<set-variable value="201" doc:name="[httpStatus]" doc:id="f7d955c7-0b8f-4501-9671-f7284a600a16" variableName="httpStatus" />
 		<set-payload value="#[vars.newProduct]" doc:name="Set Payload" doc:id="4d8a9291-d3c7-40ab-a6bc-e81a389de7fb" />
 	</flow>
+	<flow name="PostNewStock" doc:id="480d5ff5-5741-456b-869c-180a2a66c9d1" >
+		<logger level="INFO" doc:name="Logger" doc:id="6bb04a63-a041-4e71-b125-2f8e2199027c" />
+	</flow>
 	<flow name="getAllProducts" doc:id="905db680-849b-442d-a1fa-3adb615a5f65" >
 		<sftp:read doc:name="Read" doc:id="69c6f7bb-399b-457e-b2c7-bfebe74b42cb" config-ref="SFTP_Config" path="${sftp.filename-product}"/>
+		<logger level="INFO" doc:name="Logger" doc:id="1d11f452-b72f-4dbb-b74d-9517b4626edc" message="#[payload]"/>
 		<ee:transform doc:name="Transform Message" doc:id="ebcbd3db-2af5-4c5f-838f-914b6dded587" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
