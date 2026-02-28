@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_d59f6be8_b902_4e0e_9841_4d5bc87b307a_Output_Payload = Array<{  price: Number,   name: String,   id: Number,   category: "Graphisme" | "Sécurité" | "Électronique" | "Audio" | "Accessoire",   stock: Number,   _?: Any}>
-

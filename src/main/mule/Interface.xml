@@ -14,9 +14,9 @@
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:error-response>
         </http:listener>
-        <logger level="INFO" doc:name="Start" doc:id="17c3ded3-dafb-40ac-a55f-c4c06519717f" message="#[{ &#xA; step: &quot;Start flow&quot;, &#xA; data : {&#xA;  business: {},&#xA;  technical: {}&#xA; }&#xA;}]" />
+        <logger level="INFO" doc:name="Start" doc:id="17c3ded3-dafb-40ac-a55f-c4c06519717f" message="#[{&#10;          step: 'Start flux-invoices-main',&#10;          data: {&#10;            business: {&#10;              path: attributes.requestPath,&#10;              method: attributes.method&#10;            },&#10;            technical: {&#10;              correlationId: correlationId,&#10;              queryParams: attributes.queryParams&#10;            }&#10;          }&#10;        }]" category="api-main"/>
         <apikit:router config-ref="flux-invoices-config" />
-        <logger level="INFO" doc:name="End" doc:id="ba0058b4-d10b-4d6e-9c65-851c0fc3728e" message="#[{ &#xA; step: &quot;Start flow&quot;, &#xA; data : {&#xA;  business: {},&#xA;  technical: {}&#xA; }&#xA;}]" />
+        <logger level="INFO" doc:name="End" doc:id="ba0058b4-d10b-4d6e-9c65-851c0fc3728e" message="#[{&#10;          step: 'End flux-invoices-main',&#10;          data: {&#10;            technical: {&#10;              httpStatus: vars.httpStatus default 200&#10;            }&#10;          }&#10;        }]" />
         <error-handler>
             <on-error-propagate type="APIKIT:BAD_REQUEST">
                 <ee:transform doc:name="Transform Message">
@@ -96,6 +96,28 @@ output application/json
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="abade665-b383-4f3a-92fc-710666f55662" type="PRODUCT:NOT_FOUND">
+				<ee:transform doc:name="Transform Message" doc:id="53cedcd9-2586-4a6a-ab41-296497a52926" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="[httpStatus]" doc:id="1ea68805-71a7-4d97-bb75-a7c2eba38ff8" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1b0d63bf-7fda-41cd-a070-4fa3e2fe7730" type="PRODUCTS:NOT_ACCEPTABLE">
+				<ee:transform doc:name="Transform Message" doc:id="0db6a1f0-3c7f-4346-848a-f168070b6940" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="406" doc:name="[httpStatus]" doc:id="4f02d381-1be4-4b33-a570-e486b2379e1a" variableName="httpStatus" />
+			</on-error-propagate>
         </error-handler>
     </flow>
     <flow name="flux-invoices-console">
