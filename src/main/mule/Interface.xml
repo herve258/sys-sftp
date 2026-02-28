@@ -96,7 +96,7 @@ output application/json
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="abade665-b383-4f3a-92fc-710666f55662" type="PRODUCT:NOT_FOUND">
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="abade665-b383-4f3a-92fc-710666f55662" type="PRODUCTS:NOT_FOUND">
 				<ee:transform doc:name="Transform Message" doc:id="53cedcd9-2586-4a6a-ab41-296497a52926" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -171,10 +171,10 @@ output application/json
         <logger level="INFO" doc:name="Logger" doc:id="ac85aa40-581a-42db-ac4d-c51c5b926f00" />
     </flow>
     <flow name="post:\products:application\json:flux-invoices-config">
-        <flow-ref doc:name="post-New-Product" doc:id="63b9c006-7c0f-4cdf-a3d2-10630c4ee11d" name="PostProduct" />
+        <flow-ref doc:name="PostProduct" doc:id="63b9c006-7c0f-4cdf-a3d2-10630c4ee11d" name="PostProduct" />
     </flow>
     <flow name="post:\products\(id):flux-invoices-config">
 		<set-variable value="#[attributes.uriParams.id as Number]" doc:name="[id]" doc:id="75da9921-8940-414e-bcab-39d7bb6993b1" variableName="id"/>
-		<flow-ref doc:name="post-new-Stock-On-Product" doc:id="c25d7693-f853-43df-ace2-09279c46807d" name="PostNewStock"/>
+		<flow-ref doc:name="PostNewStock" doc:id="c25d7693-f853-43df-ace2-09279c46807d" name="PostNewStock"/>
     </flow>
 </mule>
