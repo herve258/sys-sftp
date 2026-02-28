@@ -28,9 +28,9 @@ payload filter (product) -> product.category == vars.category]]></ee:set-payload
 		<logger level="INFO" doc:name="Logger" doc:id="54b7e6ed-da94-43fe-9b16-6b3de4e5f456" message="Incoming body: #[payload]"/>
 		<set-variable value="#[payload]" doc:name="[newProduct]" doc:id="0a83c10a-b413-49d8-815d-7148a66b69d5" variableName="newProduct"/>
 		<flow-ref doc:name="get-all-products" doc:id="45406bbc-7cad-4de5-9876-dadfdf9577a2" name="getAllProducts"/>
-		<validation:is-true doc:name="Check product exists" doc:id="5cc97f61-b16c-474c-8731-2b6cfd92b2a3" expression="#[modules::Products::idExists(payload, vars.newProduct.id)]" message="Product not found">
+		<validation:is-false doc:name="Check product does not exists" doc:id="d0b44d6a-879a-43e1-8d21-822f6f8e69c3" expression="#[modules::Products::idExists(payload, vars.newProduct.id)]" message="Product exists">
 			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="PRODUCTS:NOT_ACCEPTABLE" />
-		</validation:is-true>
+		</validation:is-false>
 		<ee:transform doc:name="Append" doc:id="15e5ea7c-2663-4af2-b2b7-f1be4968ac4f">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -42,27 +42,15 @@ import * from modules::Products
 addProduct(payload, vars.newProduct)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="To CSV" doc:id="db2ac186-f7b4-4792-b87f-70f9063ac342">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/csv header=true
----
-payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<sftp:write doc:name="Write" doc:id="c696f89d-2077-4c47-a69a-b64a70dd4c02" config-ref="SFTP_Config" path="${sftp.filename-product}" />
+		<flow-ref doc:name="Write-to-sftp" doc:id="fe087984-82d9-49c4-aec5-a4b695e206f7" name="Write-to-sftp" />
 		<set-variable value="201" doc:name="[httpStatus]" doc:id="f7d955c7-0b8f-4501-9671-f7284a600a16" variableName="httpStatus" />
 		<set-payload value="#[vars.newProduct]" doc:name="Set Payload" doc:id="4d8a9291-d3c7-40ab-a6bc-e81a389de7fb" />
 	</flow>
 	<flow name="PostNewStock" doc:id="480d5ff5-5741-456b-869c-180a2a66c9d1" >
 		<flow-ref doc:name="get-all-products" doc:id="29739abc-6538-4f9b-8237-99d1da4fb9c8" name="getAllProducts" />
-		<validation:is-true
-		  doc:name="Check product exists"
-		  expression="#[modules::Products::idExists(payload, vars.id)]"
-		  message="Product not found">
-			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="PRODUCT:NOT_FOUND" />
-		
-</validation:is-true>
+		<validation:is-true doc:name="Check product exists" doc:id="d2bb572b-5607-4801-b56d-0abb1f97dea2" expression="#[modules::Products::idExists(payload, vars.id)]" message="Product not found">
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="PRODUCTS:NOT_FOUND" />
+		</validation:is-true>
 		<ee:transform doc:name="Increment Stock" doc:id="2b89bc6d-45d8-418f-aa46-d13c8e156c75" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[output application/java
@@ -72,16 +60,19 @@ import * from modules::Products
 incrementStock(payload, vars.id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="To CSV" doc:id="24ce59d1-3189-4105-bc42-ebebd5334725" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[output application/csv header=true
+		<flow-ref doc:name="Write-to-sftp" doc:id="8d16caed-97a9-4e94-b7ca-425d35688cb7" name="Write-to-sftp"/>
+		<set-variable value="201" doc:name="[httpStatus]" doc:id="8fb2e8f4-5a5e-41ef-bcc5-e0c448834b74" variableName="httpStatus" />
+	</flow>
+	<sub-flow name="Write-to-sftp" doc:id="50f51f16-c4af-47d7-9ad9-850857cccaf2" >
+		<ee:transform doc:name="To CSV" doc:id="24ce59d1-3189-4105-bc42-ebebd5334725">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/csv header=true
 ---
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<sftp:write doc:name="Write" doc:id="3ed44f4a-9b23-4dcc-9e79-5e0e4a711299" config-ref="SFTP_Config" path="${sftp.filename-product}"/>
-		<set-variable value="201" doc:name="[httpStatus]" doc:id="8fb2e8f4-5a5e-41ef-bcc5-e0c448834b74" variableName="httpStatus"/>
-	</flow>
+		<sftp:write doc:name="Write" doc:id="3ed44f4a-9b23-4dcc-9e79-5e0e4a711299" config-ref="SFTP_Config" path="${sftp.filename-product}" />
+	</sub-flow>
 	<flow name="getAllProducts" doc:id="905db680-849b-442d-a1fa-3adb615a5f65" >
 		<sftp:read doc:name="Read" doc:id="69c6f7bb-399b-457e-b2c7-bfebe74b42cb" config-ref="SFTP_Config" path="${sftp.filename-product}"/>
 		<logger level="INFO" doc:name="Logger" doc:id="1d11f452-b72f-4dbb-b74d-9517b4626edc" message="#[payload]"/>
