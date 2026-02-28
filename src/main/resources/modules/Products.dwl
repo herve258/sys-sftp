@@ -8,17 +8,17 @@ type Product = {
     stock: Number
 }
 
-fun toTypedProduct(p) =
+fun toTypedProduct(product) =
     {
-        id:      (p.id default "0") as Number,
-        name:    p.name default "",
-        category: p.category default "",
-        price:   (p.price default "0") as Number,
-        stock:   (p.stock default "0") as Number
+        id:      (product.id default "0") as Number,
+        name:    product.name default "",
+        category: product.category default "",
+        price:   (product.price default "0") as Number,
+        stock:   (product.stock default "0") as Number
     }
 
 fun toTypedProducts(list) =
-    list map (p) -> toTypedProduct(p)
+    list map (product) -> toTypedProduct(product)
 
 fun filterByCategory(products, category) =
     if (category == null or category == "")
@@ -32,3 +32,10 @@ fun idExists(products, id) =
     
 fun addProduct(products: Array<Product>, newProduct: Product): Array<Product> =
     products ++ [newProduct]
+    
+fun incrementStock(products, id) =
+    products map (p) ->
+        if (p.id == id)
+            p ++ { stock: p.stock + 1 }
+        else
+            p
