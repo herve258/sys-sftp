@@ -47,9 +47,7 @@ addProduct(payload, vars.newProduct)]]></ee:set-payload>
 	</flow>
 	<flow name="PostNewStock" doc:id="480d5ff5-5741-456b-869c-180a2a66c9d1" >
 		<flow-ref doc:name="get-all-products" doc:id="29739abc-6538-4f9b-8237-99d1da4fb9c8" name="getAllProducts" />
-		<validation:is-true doc:name="Check product exists" doc:id="d2bb572b-5607-4801-b56d-0abb1f97dea2" expression="#[modules::Products::idExists(payload, vars.id)]" message="Product not found">
-			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="PRODUCTS:NOT_FOUND" />
-		</validation:is-true>
+		<flow-ref doc:name="Check product exists" doc:id="7f19c8d5-f861-4592-9e21-5b96adafd0b2" name="Check-product-exists"/>
 		<ee:transform doc:name="Increment Stock" doc:id="2b89bc6d-45d8-418f-aa46-d13c8e156c75" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[output application/java
@@ -61,6 +59,26 @@ incrementStock(payload, vars.id)]]></ee:set-payload>
 		</ee:transform>
 		<flow-ref doc:name="Write-to-sftp" doc:id="8d16caed-97a9-4e94-b7ca-425d35688cb7" name="Write-to-sftp"/>
 	</flow>
+	<flow name="delete-a-product" doc:id="b668e160-afed-4f4d-8d3d-d68f61fa97dc" >
+		<flow-ref doc:name="get-all-products" doc:id="82b05653-d5a1-447a-8212-f970c64bf315" name="getAllProducts"/>
+		<flow-ref doc:name="Check product exists" doc:id="80e18db9-f8d7-4616-a235-e0010c70ddee" name="Check-product-exists"/>
+		<ee:transform doc:name="Delete" doc:id="ef973c7e-f945-4610-98e0-87efbf19cfd8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+import * from modules::Products
+
+---
+deleteProduct(payload, vars.id)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Write-to-sftp" doc:id="91834cb2-5600-4b66-a159-f56e5725db69" name="Write-to-sftp" />
+	</flow>
+	<sub-flow name="Check-product-exists" doc:id="4ea1b050-ab47-43b1-8874-877cdc3f5c45" >
+		<validation:is-true doc:name="Check product exists" doc:id="d2bb572b-5607-4801-b56d-0abb1f97dea2" expression="#[modules::Products::idExists(payload, vars.id)]" message="Product not found">
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="PRODUCTS:NOT_FOUND" />
+		</validation:is-true>
+	</sub-flow>
 	<sub-flow name="Write-to-sftp" doc:id="50f51f16-c4af-47d7-9ad9-850857cccaf2" >
 		<ee:transform doc:name="To CSV" doc:id="24ce59d1-3189-4105-bc42-ebebd5334725">
 			<ee:message>

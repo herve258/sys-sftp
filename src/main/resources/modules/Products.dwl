@@ -39,3 +39,15 @@ fun incrementStock(products, id) =
             product ++ { stock: product.stock + 1 }
         else
             product
+fun deleteProduct(products, id) =
+    products filter (product) -> product.id != id
+    
+fun removeStock(products, id, qty) =
+    products flatMap (product) ->
+        if (product.id == id)
+            if (product.stock - qty > 0)
+                [ product ++ { stock: product.stock - qty } ]
+            else
+                [] 
+        else
+            [product]
