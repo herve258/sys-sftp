@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_4ea1b050_ab47_43b1_8874_877cdc3f5c45_Output_Payload = Array<{|  id: Number,   name: Any,   category: Any,   price: Number,   stock: Number|}>
+

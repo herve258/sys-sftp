@@ -129,16 +129,13 @@ output application/json
         <flow-ref doc:name="GetInvoice" doc:id="ac82641c-39d2-4fe8-b535-29ceb9b31ee8" name="GetInvoice" />
     </flow>
     <flow name="delete:\products\(id):flux-invoices-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <logger level="INFO" message="delete:\products\(id):flux-invoices-config" />
+        <set-variable value="#[attributes.uriParams.id as Number]" doc:name="[id]" doc:id="55fe6702-77d7-4829-a228-de915a67e78c" variableName="id"/>
+		<set-variable value='#[(attributes.queryParams.qty default "0") as Number]' doc:name="[qty]" doc:id="a45163d5-2419-4096-9410-267b58302cb6" variableName="qty" />
+		<flow-ref doc:name="Delete-product" doc:id="134dcbb4-9031-4392-8b3f-262fe79a1e1e" name="delete-a-product"/>
     </flow>
     <flow name="get:\products:flux-invoices-config">
         <set-variable value="#[attributes.queryParams.category]" doc:name="[category]" doc:id="d0d11f3c-84f0-483f-b5f7-6353508e00c2" variableName="category" />
-        <flow-ref doc:name="get-Products" doc:id="451ccb02-6e76-467c-a096-47adcb646232" name="getProducts" />
+		<flow-ref doc:name="get-Products" doc:id="451ccb02-6e76-467c-a096-47adcb646232" name="getProducts" />
     </flow>
     <flow name="get:\products\(id):flux-invoices-config">
         <logger level="INFO" doc:name="Logger" doc:id="ac85aa40-581a-42db-ac4d-c51c5b926f00" />
