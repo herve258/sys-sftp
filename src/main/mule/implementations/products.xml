@@ -69,7 +69,10 @@ output application/java
 import * from modules::Products
 
 ---
-deleteProduct(payload, vars.id)]]></ee:set-payload>
+if(vars.qty ~= 0)
+   deleteProduct(payload, vars.id)
+else
+   removeStock(payload, vars.id, vars.qty)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="Write-to-sftp" doc:id="91834cb2-5600-4b66-a159-f56e5725db69" name="Write-to-sftp" />
