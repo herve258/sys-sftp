@@ -43,7 +43,6 @@ addProduct(payload, vars.newProduct)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="Write-to-sftp" doc:id="fe087984-82d9-49c4-aec5-a4b695e206f7" name="Write-to-sftp" />
-		<set-variable value="201" doc:name="[httpStatus]" doc:id="f7d955c7-0b8f-4501-9671-f7284a600a16" variableName="httpStatus" />
 		<set-payload value="#[vars.newProduct]" doc:name="Set Payload" doc:id="4d8a9291-d3c7-40ab-a6bc-e81a389de7fb" />
 	</flow>
 	<flow name="PostNewStock" doc:id="480d5ff5-5741-456b-869c-180a2a66c9d1" >
@@ -61,7 +60,6 @@ incrementStock(payload, vars.id)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="Write-to-sftp" doc:id="8d16caed-97a9-4e94-b7ca-425d35688cb7" name="Write-to-sftp"/>
-		<set-variable value="201" doc:name="[httpStatus]" doc:id="8fb2e8f4-5a5e-41ef-bcc5-e0c448834b74" variableName="httpStatus" />
 	</flow>
 	<sub-flow name="Write-to-sftp" doc:id="50f51f16-c4af-47d7-9ad9-850857cccaf2" >
 		<ee:transform doc:name="To CSV" doc:id="24ce59d1-3189-4105-bc42-ebebd5334725">
